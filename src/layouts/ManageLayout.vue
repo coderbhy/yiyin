@@ -61,6 +61,11 @@ export default {
           to: '/manage/other'
         },
         {
+          icon: 'icon-zhuangtaitongji',
+          des: '类型管理',
+          to: '/manage/type'
+        },
+        {
           icon: 'icon-shezhi',
           des: '设置',
           to: '/manage/set'

@@ -1,12 +1,12 @@
 <template>
   <swiper ref="mySwiper" :options="swiperOptions" class="">
-    <swiper-slide v-for="(item, index) in videosList" :key="item.id">
+    <swiper-slide v-for="(item, index) in allVideos" :key="item.id">
       <videos :src="item.src" ref="childVideo" :index-num="index"></videos> 
       <div class="left-info">
         <left-info></left-info>
       </div>
       <div class="right-info">
-        <right-info></right-info>
+        <right-info :video-id="item.id"></right-info>
       </div>
     </swiper-slide>
     <div class="swiper-pagination" slot="pagination"></div>
@@ -20,6 +20,8 @@ import { Swiper, SwiperSlide } from 'vue-awesome-swiper'
 import Videos from './Videos'
 import LeftInfo from './LeftInfo'
 import RightInfo from './RightInfo'
+
+import { mapState } from 'vuex'
 export default{
   components: {
     Swiper,
@@ -81,6 +83,12 @@ export default{
     }
   },
   methods: {
+  },
+  computed: {
+    // 获取首页中用户观看的所有视频
+    ...mapState({
+      'allVideos': state => state.user.allVideos
+    })
   }
 }
 </script>

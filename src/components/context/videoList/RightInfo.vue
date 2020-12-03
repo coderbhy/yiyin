@@ -4,16 +4,17 @@
       <q-avatar>
         <img src="~assets/avatar/星空.jpg">
       </q-avatar>
-      <q-icon name="iconfont icon-jia-tianchong" class="text-pink icon-jia" size="1.35rem"></q-icon>
+      <!-- <q-icon name="iconfont icon-jia-tianchong" class="text-pink icon-jia" size="1.35rem"></q-icon> -->
     </div>
     <div class="item text-center" :class="this.like? 'text-red': 'text-grey-9'" @click.stop="changeLike">
       <q-icon name="iconfont icon-aixin_shixin" size="2rem"></q-icon>
-      <p>1.4w</p>
+      <!-- 点赞总数 -->
+      <!-- <p>1.4w</p> -->
     </div>
-    <div class="item text-center" :class="this.money? 'text-red': 'text-grey-9'">
+    <!-- <div class="item text-center" :class="this.money? 'text-red': 'text-grey-9'">
       <q-icon name="iconfont icon-dashang" size="2.5rem"></q-icon>
       <p>1w</p>
-    </div>
+    </div> -->
     <div class="rounded relative-position text-center">
       <q-avatar size="2.4rem" class="absolute-center">
         <img src="~assets/avatar/星空.jpg">
@@ -23,16 +24,40 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 export default {
+  props: {
+    videoId: {
+      type: String
+    }
+  },
   data () {
     return {
-      like: true,
+      like: false,
       money: false
     }
   },
   methods: {
+    ...mapActions({
+      'thumb': 'user/thumb'
+    }),
     changeLike () {
-      this.like = !this.like
+      let self = this
+      this.thumb(this.videoId)
+        .then(res => {
+          if (res.data.code === 200) {
+            self.like = !this.like
+          } else if (res.data.code === 400) {
+            self.$q.notify({
+              type: 'negative',
+              message: `点赞失败`,
+              position: 'top'
+            })
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
   }
 }
@@ -47,6 +72,7 @@ export default {
 }
 .right-info .item:nth-child(2) {
   padding-top: calc(1.5rem + 1.35rem/2);
+  padding-bottom: calc(1.5rem + 1.35rem/2);
 }
 .right-info .item:nth-child(3) {
   padding: 1.5rem 0;

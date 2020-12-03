@@ -3,7 +3,7 @@
     <q-page-container>
       <router-view />
     </q-page-container>
-    <q-footer v-show="!($route.path == '/shoot')">
+    <q-footer v-show="(!($route.path == '/shoot') && !($route.path=='/login') && !($route.path=='/usertype'))">
       <tab-bar />
     </q-footer>
   </q-layout>
@@ -19,9 +19,15 @@ export default {
   },
   components: {
     TabBar
+  },
+  mounted () {
+    console.log(this.$store.state.count)
   }
 }
 </script>
 
-<style lang="stylus">
+<style>
+body .q-tabs__content {
+  overflow: visible !important;
+}
 </style>
