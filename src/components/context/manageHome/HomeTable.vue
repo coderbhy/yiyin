@@ -113,7 +113,7 @@ export default {
         //  fetchCount => 每页显示数据条数
         // filter => String
         const returnedData = this.fetchFromServer(startRow, fetchCount, filter, sortBy, descending)
-
+        console.log(returnedData)
         // clear out existing data and add new
         this.data.splice(0, this.data.length, ...returnedData)
 

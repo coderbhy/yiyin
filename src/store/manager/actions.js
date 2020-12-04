@@ -2,19 +2,14 @@ import axios from 'axios'
 axios.defaults.baseURL = 'http://localhost:3000/'
 axios.defaults.headers.post['Content-Type'] = 'multipart/form-data'
 // 从接口获取到类型数组
-export function getTypesFromInterface (context, paylaod) {
+export function getTypesFromInterface (context) {
   let formData = new FormData()
-  formData.append('other', '')
-  axios({
+  formData.append('arbitraty', '')
+  return axios({
     method: 'post',
     url: '/admin/showtype',
     data: formData
   })
-    .then(res => {
-      if (res.data.code === 200) {
-        context.commit('detectAndModifi', res.data.data)
-      }
-    })
 }
 // 删除类型
 // payload => { v_type }

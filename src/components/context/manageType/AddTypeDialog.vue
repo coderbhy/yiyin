@@ -48,14 +48,15 @@ export default {
       this.$refs.v_type.validate()
       if (!this.$refs.v_type.hasError && this.addTypeInfo.type_status != null) {
         const formData = new FormData(evt.target)
-        // formData => { v_type: String, type_status: String }
-        // for (const [ name, value ] of formData.entries()) {
-        //   console.log(name + ':' + value)
-        //   console.log(typeof value)
-        // }
+        const pushObj = {}
+        for (const [ name, value ] of formData.entries()) {
+          pushObj[name] = value
+        }
+        // console.log(endObj)
         this.$emit('addType', {
-          formData: formData,
-          show: false
+          formData,
+          show: false,
+          pushObj
         })
       } else {
         this.$q.notify({

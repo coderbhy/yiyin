@@ -10,6 +10,8 @@
       class="my-sticky-header-table"
       no-data-label="I didn't find anything for you"
       :filter="filter"
+      :pagination="Pagination"
+      hide-pagination
     >
       <template v-slot:top-right>
         <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
@@ -77,6 +79,11 @@ export default {
   },
   data () {
     return {
+      Pagination: {
+        page: 1,
+        // 设置每页展示页数为 All
+        rowsPerPage: 0
+      },
       filter: '',
       // name => 一列的标识符
       // field => 字段，如 field 为 row => field.xx 或者 field: xx
@@ -90,16 +97,40 @@ export default {
   },
   methods: {
     toVisible (value) {
-      console.log(value)
-      this.$emit('toVisible', value)
+      this.$q.dialog({
+        message: `确认显示${value}这个类型吗?`,
+        cancel: true,
+        position: 'top',
+      })
+        .onOk(() => {
+          console.log(value)
+          this.$emit('toVisible', value)
+        })
     },
     toInvisible (value) {
-      console.log(value)
-      this.$emit('toInvisible', value)
+      this.$q.dialog({
+        message: `确认隐藏${value}这个类型吗?`,
+        cancel: true,
+        position: 'top',
+      })
+        .onOk(() => {
+          console.log(value)
+          this.$emit('toInvisible', value)
+        })
     },
     delType (value) {
-      this.$emit('delType', value)
+      this.$q.dialog({
+        message: `确认删除${value}这个类型吗?`,
+        cancel: true,
+        position: 'top',
+      })
+        .onOk(() => {
+          // console.log(value)
+          this.$emit('delType', value)
+        })
     },
+    // 向父组件发送 addType 事件
+    // 并使添加卡片的展示值为 true
     add () {
       this.$emit('addType', true)
     }

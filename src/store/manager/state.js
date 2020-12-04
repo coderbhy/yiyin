@@ -19,6 +19,18 @@ export default function () {
         type_status: '1'
         // 0 隐藏
       },
+      {
+        v_type: '测试类型5',
+        type_status: '1'
+      },
+      {
+        v_type: '测试类型6',
+        type_status: '1'
+      },
+      {
+        v_type: '测试类型7',
+        type_status: '1'
+      }
     ]
   }
 }
