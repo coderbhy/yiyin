@@ -19,9 +19,9 @@ module.exports = function (/* ctx */) {
     // https://quasar.dev/quasar-cli/boot-files
     boot: [
       
-      'axios',
-      'swiper',
-      'video'
+      'axios'
+      // 'swiper',
+      // 'video'
     ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -94,7 +94,7 @@ module.exports = function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: [ 'Notify', 'Dialog', 'SessionStorage' ]
+      plugins: [ 'Notify', 'Dialog', 'SessionStorage', 'LocalStorage' ]
     },
 
     // animations: 'all', // --- includes all animations

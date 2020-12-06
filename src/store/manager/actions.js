@@ -43,3 +43,41 @@ export function addTypefromCpt (context, payload) {
     url: '/admin/addtype'
   })
 } 
+
+// 从后台接口处获得已通过审核或者未通过审核，页数为page的数据
+// payload => { status: '1', page: '0' }
+export function getSomeVideo (context, payload) {
+  let formData = new FormData()
+  for (let i in payload) {
+    formData.append(i, payload[i])
+  }
+  return axios({
+    method: 'post',
+    data: formData,
+    url: '/admin/status_v'
+  })
+}
+
+// 从后台接口处获得每种数据的数组长度
+// 返回一个对象
+// { '0': 14, '1': 15, '2': 13 }
+export function getMaxLength (context, payload) {
+  let formData = new FormData()
+  formData.append('test', '')
+  return axios({
+    method: 'post',
+    data: formData,
+    url: ''
+  })
+}
+// payload => { status: '', id: '' } 
+export function updateStatus (context, payload) {
+  let formData = new FormData()
+  formData.append('status', payload.status)
+  formData.append('id', payload.id)
+  return axios({
+    method: 'post',
+    data: formData,
+    url: '/admin/update_status'
+  })
+}

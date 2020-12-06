@@ -1,182 +1,67 @@
 <template>
-  <div class="manage-home q-pa-md">
-    <!-- row-key 绑定的是 name 值 -->
-    <q-table
-      title="待审核"
-      :data="data"
-      :columns="columns"
-      row-key="video_id"
-    >
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <div>
-            <q-badge color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-status="props">
-        <q-td :props="props">
-            <q-icon name="icon-shalou" color="primary" size="1.5rem"></q-icon>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-video_title="props">
-        <q-td :props="props">
-          <div>
-            <q-badge color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-handle="props">
-        <q-td :props="props">
-          <div>
-            <q-btn icon="check" flat rounded class="text-positive q-mr-sm" dense></q-btn>
-            <q-btn icon="close" flat rounded class="text-negative" dense></q-btn>
-          </div>
-        </q-td>
-      </template>
-      <!-- <template v-slot:body="props">
-        <q-tr :props="props"> -->
-          <!-- key 绑定的是 name 值 -->
-          <!-- <q-td key="status" :props="props" class="text-center">
-            <div class="text-center">
-              {{ props.row.status }}
-            </div> -->
-            <!-- props 绑定的是 field 中的值 -->
-           
-          <!-- </q-td>
-          <q-td key="yiban_uid" :props="props">
-            <q-badge color="green">
-              {{ props.row.yiban_uid }}
-            </q-badge>
-          </q-td>
-          <q-td key="name" :props="props">
-            <q-badge color="purple">
-              {{ props.row.name }}
-            </q-badge>
-          </q-td>
-          <q-td key="video_title" :props="props">
-            <q-badge color="orange">
-              {{ props.row.video_title }}
-            </q-badge>
-          </q-td>
-          <q-td key="video_id" :props="props">
-            <q-badge color="primary">
-              {{ props.row.video_id }}
-            </q-badge>
-          </q-td>
-          <q-td key="video_content" :props="props">
-            <q-badge color="teal">
-              {{ props.row.video_content }}
-            </q-badge>
-          </q-td>
-          <q-td key="handle" :props="props">
-            <q-badge color="accent">
-              {{ props.row.handle }}
-            </q-badge>
-          </q-td>
-        </q-tr>
-      </template> -->
-    </q-table>
+  <div class="manage-other q-pa-sm">
+    <table-uncheck :data="allUncheckData"></table-uncheck>
+    <page :max-page="UncheckMaxPage"></page>
   </div>
 </template>
 
 <script>
+import TableUncheck from 'components/context/manageUncheck/Table'
+import Page from 'components/context/manageUncheck/Page'
+import { mapActions, mapMutations, mapState } from 'vuex'
 export default {
+  components: {
+    TableUncheck,
+    Page
+  },
   methods: {
-    log(value){
-      console.log(value)
+    ...mapActions({
+      'getSomeVideo': 'manager/getSomeVideo',
+      'getMaxLength': 'manager/getMaxLength'
+    }),
+    ...mapMutations({
+      'getUncheckMax': 'manager/getUncheckMax',
+      'fillUncheckData': 'manager/fillUncheckData',
+      'changePage': 'manager/changePage'
+    }),
+    init () {
+      this.initPage()
+      this.initData()
+    },
+    // 初始化时获得最大页数
+    initPage () {
+      const self = this
+      this.getMaxLength()
+        .then(res => {
+          self.getUncheckMax(res.data.data["2"])
+        })
+    },
+    initData () {
+      // 更改当前页数为 1
+      this.changePage(1)
+      const self = this
+      this.getSomeVideo({
+        status: '2',
+        page: ((self.UncheckCurrent - 1) * 7).toString()
+      })
+        .then(res => {
+          self.fillUncheckData(res.data.data)
+        })
     }
   },
   data () {
     return {
-      selected: [],
-      columns: [
-        {
-          name: 'status',
-          required: true,
-          label: '审核状态',
-          align: 'center',
-          field: row => row.status
-          // sortable: true
-        },
-        {
-          name: 'yiban_uid',
-          required: true,
-          label: 'yiban_uid',
-          align: 'left',
-          field: row => row.yiban_uid,
-          sortable: false
-        },
-        {
-          name: 'name',
-          required: true,
-          label: '姓名',
-          align: 'left',
-          field: row => row.name,
-          sortable: true
-        },
-        {
-          name: 'video_title',
-          required: true,
-          label: '视频名称',
-          align: 'left',
-          field: row => row.video_title,
-          sortable: true
-        },
-        {
-          name: 'video_id',
-          required: true,
-          label: '视频id',
-          align: 'left',
-          field: row => row.video_id,
-          sortable: true
-        },
-        {
-          name: 'video_content',
-          required: true,
-          label: '视频内容',
-          align: 'left',
-          field: row => row.video_content,
-          sortable: true
-        },
-        {
-          name: 'handle',
-          required: true,
-          label: '操作',
-          align: 'center',
-          field: row => row.handle,
-        }
-      ],
-      data: [
-        {
-          status: 1,
-          yiban_uid: 'qwe11211212r',
-          name: '小明',
-          video_title: '标题',
-          video_id: '1234qwer',
-          video_content: '内容',
-          handle: '操作'
-        },
-        {
-          status: 1,
-          yiban_uid: 'qwer',
-          name: '阿肖',
-          video_title: '标题',
-          video_id: '1234wer',
-          video_content: '内容',
-          handle: '操作'
-        },
-        {
-          status: 0,
-          yiban_uid: 'qwer',
-          name: '包子',
-          video_title: '标题',
-          video_id: '1234qr',
-          video_content: '内容',
-          handle: '操作'
-        }
-      ]
     }
+  },
+  computed: {
+    ...mapState({
+      'allUncheckData': state => state.manager.allUncheckData,
+      'UncheckMaxPage': state => state.manager.UncheckMaxPage,
+      'UncheckCurrent': state => state.manager.UncheckCurrent
+    })
+  },
+  created () {
+    this.init()
   }
 }
 </script>

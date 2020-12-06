@@ -11,7 +11,8 @@
       no-data-label="I didn't find anything for you"
       :pagination.sync="pagination"
       :loading="loading"
-      @request="onRequest"
+      :dark="dark"
+      hide-bottom
     >
       <template v-slot:top-right>
         <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
@@ -19,7 +20,6 @@
             <q-icon name="search" />
           </template>
         </q-input>
-        <q-btn icon="add" round size="sm" flat class="bg-primary text-white q-ml-sm" dense></q-btn>
         <q-select
           transition-show="scale"
           transition-hide="scale"
@@ -31,7 +31,6 @@
           class="q-ml-sm select"
           clearable
           label="选择类型"
-          @input="changeModel"
           dense
           options-dense>
           <template v-slot:prepend>
@@ -39,16 +38,9 @@
           </template>
         </q-select>
       </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <div>
-            <q-badge color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
       <template v-slot:body-cell-status="props">
         <q-td :props="props">
-          <div v-if="props.value">
+          <div v-if="props.value === '0'">
             <q-icon name="icon-chenggong" color="positive" size="1.5rem"></q-icon>
           </div>
           <div v-else>
@@ -56,32 +48,68 @@
           </div>
         </q-td>
       </template>
-      <template v-slot:body-cell-video_title="props">
+      <template v-slot:body-cell-src="props">
+        <q-td :props="props">
+          <q-btn dense flat icon="movie" color="primary" @click="showVideoCard(true, props.value, props.row.title)"></q-btn>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-cover="props">
         <q-td :props="props">
           <div>
-            <q-badge color="purple" :label="props.value" />
+            <!-- {{ props.value }} -->
+            <!-- <q-img :src="~assets/avatar/星空.jpg"/> -->
+            <q-img :src="props.value" width="2.5rem">
+              <template v-slot:error>
+                <div class="absolute-full flex flex-center bg-negative text-white">
+                  Cannot load image
+                </div>
+              </template>
+            </q-img>
           </div>
         </q-td>
       </template>
       <template v-slot:body-cell-handle="props">
         <q-td :props="props">
           <div>
-            <q-btn icon="check" flat rounded class="text-positive q-mr-sm" dense></q-btn>
-            <q-btn icon="close" flat rounded class="text-negative" dense></q-btn>
+            <q-btn :disable="props.row.status === '0'" icon="check" flat rounded class="text-positive q-mr-sm" dense @click="pass(props.row.id)"></q-btn>
+            <q-btn :disable="props.row.status === '1'" icon="close" flat rounded class="text-negative" dense @click="unpass(props.row.id)"></q-btn>
           </div>
         </q-td>
       </template>
     </q-table>
+    
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   props: {
+    // 类型选择数组
     typeArray: {
       type: Array,
       default () {
         return []
+      }
+    },
+    // data
+    data: {
+      type: Array,
+      default () {
+        return []
+      }
+    }
+  },
+  computed: {
+    ...mapState({
+      'checkModuleDark': state => state.manager.checkModuleDark
+    }),
+    dark () {
+      if (this.$q.localStorage.has('checkModuleDark')) {
+        return this.$q.localStorage.getItem('checkModuleDark')
+      } else {
+        console.log(this.checkModuleDark)
+        return this.checkModuleDark
       }
     }
   },
@@ -93,103 +121,54 @@ export default {
         'status': true
       })
     },
-    onRequest (props) {
-      // props => { pagination: this.pagination, filter: this.filter  }
-      const { page, rowsPerPage, sortBy, descending } = props.pagination
-      const filter = props.filter
-      this.loading = true
-      setTimeout(() => {
-        // update rowsCount with appropriate value
-        this.pagination.rowsNumber = this.getRowsNumberCount(filter)
-        // 若选择了 all，则获取所有行
-        // 0 意味着无穷大
-        // 如果选择了 0，则显示所有从服务器获取到的数据
-        // 否则选择 3，每页就显示 3 条数据，选择 5，每页就显示 5 条数据
-        // fetchCount => 每页显示数据条数
-        const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage
-        // 计算起始行数据
-        const startRow = (page - 1) * rowsPerPage
-        // 从服务器获取数据
-        //  fetchCount => 每页显示数据条数
-        // filter => String
-        const returnedData = this.fetchFromServer(startRow, fetchCount, filter, sortBy, descending)
-        console.log(returnedData)
-        // clear out existing data and add new
-        this.data.splice(0, this.data.length, ...returnedData)
-
-        // don't forget to update local pagination object
-        this.pagination.page = page
-        this.pagination.rowsPerPage = rowsPerPage
-        this.pagination.sortBy = sortBy
-        this.pagination.descending = descending
-
-        // ...and turn of loading indicator
-        this.loading = false
-      }, 1500)
+    // 向父组件发送请求，显示 dialog
+    showVideoCard (bool, src, title) {
+      // console.log(bool)
+      // console.log(src)
+      this.$emit('showVideoCard', { bool, src, title })
     },
-    fetchFromServer (startRow, count, filter, sortBy, descending) {
-      const data = filter
-        ? this.data.filter(row => row.name.includes(filter))
-        : this.data.slice()
-
-      // handle sortBy
-      // 如果有排序
-      if (sortBy) {
-        const sortFn = sortBy === 'desc'
-        // 如果是按照 desc 字段的值进行排序
-          ? (descending
-            // 正序
-            ? (a, b) => (a.name > b.name ? -1 : a.name < b.name ? 1 : 0)
-            // 逆序
-            : (a, b) => (a.name > b.name ? 1 : a.name < b.name ? -1 : 0)
-          )
-          // 按照用户自定义的值进行排序
-          : (descending
-            ? (a, b) => (parseFloat(b[sortBy]) - parseFloat(a[sortBy]))
-            : (a, b) => (parseFloat(a[sortBy]) - parseFloat(b[sortBy]))
-          )
-        data.sort(sortFn)
-      }
-
-      return data.slice(startRow, startRow + count)
-    },
-    // 返回长度 =>  查找与输入字段有关联的长度
-    getRowsNumberCount (filter) {
-      if (!filter) {
-        // 如果未输入查找字段，则返回所有数据
-        return this.data.length
-      }
-      let count = 0
-      this.data.forEach((treat) => {
-        if (treat.name.includes(filter)) {
-          ++count
-        }
+    // 通过审核
+    pass (id) {
+      // console.log(id)
+      this.$q.dialog({
+        // title: 'Options',
+        message: `确定通过视频id为${id}的视频吗？`,
+        cancel: true
+      }).onOk(() => {
+        // console.log('>>>> OK, received', data)
+        this.$emit('passTheId', id)
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
       })
-      return count
+    },
+    unpass (id) {
+      this.$q.dialog({
+        // title: 'Options',
+        message: `确定不通过视频id为${id}的视频吗？`,
+        cancel: true
+      }).onOk(() => {
+        // console.log('>>>> OK, received', data)
+        this.$emit('unpassTheId', id)
+      }).onCancel(() => {
+        // console.log('>>>> Cancel')
+      })
     }
   },
-  mounted () {
-    this.onRequest({
-      pagination: this.pagination,
-      // filter 绑定的 this.filter
-      filter: undefined
-    })
-  },
+
   data () {
     return {  
       model: null,
       loading: false,
       pagination: {
         // 根据 data 的某个字段进行排序
-        sortBy: 'id',
+        // sortBy: 'id',
         // 是否按降序排列
         descending: false,
         // 页码
         page: 1,
         // 每页有多少行
-        rowsPerPage: 7,
-        // 总共有多少数据库行要添加到表中
-        rowsNumber: 7
+        // 设置每页有 14 行
+        rowsPerPage: 14
       },
       filter: '',
       selected: [],
@@ -203,43 +182,50 @@ export default {
           // sortable: true
         },
         {
-          name: 'yiban_uid',
-          required: true,
-          label: 'yiban_uid',
-          align: 'left',
-          field: row => row.yiban_uid,
-          sortable: false
-        },
-        {
-          name: 'name',
-          required: true,
-          label: '姓名',
-          align: 'left',
-          field: row => row.name,
-          sortable: true
-        },
-        {
-          name: 'video_title',
-          required: true,
-          label: '视频名称',
-          align: 'left',
-          field: row => row.video_title,
-          sortable: true
-        },
-        {
-          name: 'video_id',
+          name: 'id',
           required: true,
           label: '视频id',
           align: 'left',
-          field: row => row.video_id,
+          field: row => row.id,
+          sortable: false
+        },
+        {
+          name: 'title',
+          required: true,
+          label: '视频标题',
+          align: 'left',
+          field: row => row.title,
           sortable: true
         },
         {
-          name: 'video_content',
+          name: 'src',
           required: true,
           label: '视频内容',
+          align: 'center',
+          field: row => row.src
+        },
+        
+        {
+          name: 'cover',
+          required: true,
+          label: '视频封面',
+          align: 'center',
+          field: row => row.cover
+        },
+        {
+          name: 'v_type',
+          required: true,
+          label: '视频类型',
           align: 'left',
-          field: row => row.video_content,
+          field: row => row.v_type,
+          sortable: true
+        },
+        {
+          name: 'upload_date',
+          required: true,
+          label: '视频上传日期',
+          align: 'left',
+          field: row => row.upload_date,
           sortable: true
         },
         {
@@ -250,35 +236,6 @@ export default {
           field: row => row.handle,
         }
       ],
-      data: [
-        {
-          status: 1,
-          yiban_uid: 'qwe11211212r',
-          name: '小明',
-          video_title: '标题',
-          video_id: '1234qwer',
-          video_content: '内容',
-          handle: '操作'
-        },
-        {
-          status: 1,
-          yiban_uid: 'qwer',
-          name: '阿肖',
-          video_title: '标题',
-          video_id: '1234wer',
-          video_content: '内容',
-          handle: '操作'
-        },
-        {
-          status: 0,
-          yiban_uid: 'qwer',
-          name: '包子',
-          video_title: '标题',
-          video_id: '1234qr',
-          video_content: '内容',
-          handle: '操作'
-        }
-      ]
     }
   }
 }
@@ -287,7 +244,7 @@ export default {
 <style lang="sass">
 .my-sticky-header-table-home
   /* height or max-height is important */
-  height: 87vh
+  height: 82vh
 
   .q-table__top,
   .q-table__bottom,

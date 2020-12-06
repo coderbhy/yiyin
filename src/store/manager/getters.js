@@ -16,3 +16,9 @@ export function InvisibleTypes (state) {
   }
   return invisibleTypes
 }
+
+export function CheckData (state) {
+  let CheckArray = []
+  CheckArray = CheckArray.concat(state.allPassData).concat(state.allUnpassData)
+  return CheckArray
+}

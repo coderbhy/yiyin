@@ -57,3 +57,39 @@ export function makeObjShow (state, payload) {
   })
   obj.type_status = '1'
 }
+
+// 改变审核模块的黑夜模式
+// dark => Boolean
+export function changeCheckDark (state, dark) {
+  state.checkModuleDark = dark
+}
+
+
+export function sendDataToArray (state, { arrayName, data }) {
+  state.arrayName.splice(0, state.arrayName.length)
+  state.arrayName = state.arrayName.concat(data)
+}
+
+// 
+export function getUncheckMax (state, payload) {
+  state.UncheckMaxPage = Math.ceil(payload / 7)
+}
+//
+export function fillUncheckData (state, payload) {
+  state.allUncheckData.splice(0, state.allUncheckData.length)
+  state.allUncheckData = state.allUncheckData.concat(payload)
+}
+// export 
+export function changePage (state, payload) {
+  state.UncheckCurrent = payload
+} 
+// payload => { Number }
+// 当前页数，已审核界面
+export function changeCheckCurrentPage (state, payload) {
+  state.currentPage = payload
+}
+// 更改已审核最大页数
+// payload: { '0': 12, '1': 15, '2': 16 }
+export function changeCheckMaxPage (state, payload) {
+  state.maxPage = payload["0"] > payload["1"] ? Math.ceil(payload["0"] / 7) : Math.ceil(payload["1"] / 7)
+}
