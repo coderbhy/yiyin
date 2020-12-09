@@ -6,17 +6,16 @@
       indicator-color="orange"
       dense
     >
-      <q-tab name="mails"  label="作品" />
-      <q-tab name="movies" label="喜欢" />
+      <q-tab name="work"  label="作品" />
+      <q-tab name="thumb" label="喜欢" />
     </q-tabs>
     <q-separator></q-separator>
     <q-tab-panels v-model="tab" animated>
-      <q-tab-panel name="mails">
+      <q-tab-panel name="work">
         <tab-panel ref="work" :result-array="ownWorks" @addPage="addWorkPage"></tab-panel>
       </q-tab-panel>
 
-
-      <q-tab-panel name="movies">
+      <q-tab-panel name="thumb">
         <tab-panel ref="thumb" :result-array="userThumb" @addPage="addPage"></tab-panel>
       </q-tab-panel>
     </q-tab-panels>
@@ -24,12 +23,12 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions, mapMutations } from 'vuex'
 import TabPanel from './TabPanel'
 export default {
   data () {
     return {
-      tab: 'mails'
+      tab: 'work'
     }
   },
   components: {
@@ -48,6 +47,11 @@ export default {
       'getInitWorks': 'user/getInitWorks',
       // 2.根据视频 id 获取到完整信息
       'getPerfectWorks': 'user/getPerfectWorks'
+    }),
+    ...mapMutations({
+      'pushThumb': 'user/pushThumb',
+      'updateThumb': 'user/updateThumb',
+      'pushWork': 'user/pushWork'
     }),
     // 监听*点赞*子组件的 page 数目变化
     addPage (page) {
@@ -68,17 +72,65 @@ export default {
           } else {
             // 若接口中的点赞数据中含有数据
             // 获取到初始化点赞数组后，先把数组 push 到 state 中的点赞数组后面
-            self.$store.commit('pushThumb', res.data.data.prise_v)
+            self.pushThumb(res.data.data.prise_v)
             // 得到数组数据后，传入 id 完善点赞数组数据
-            for (let i = 0; i < res.data.data.prise_v.length; i++) {
+            for (let i = 0; i < self.userThumb.length; i++) {
               // 传入未完善点赞数组前的 id
-              self.getThumbVideo(res.data.data.prise_v[i])
+              const that = self
+              self.getThumbVideo(self.userThumb[i].id)
+                .then(res => {
+                  if (res.data.code === 200) {
+                    if (res.data.data[0].id === self.userThumb[i].id) {
+                      that.updateThumb({
+                        id: self.userThumb[i].id,
+                        content: res.data.data[0]
+                      })
+                    }
+                  }
+                })
             }
           }
           
         })
     },
     
+
+    getOwnAndComplete (page) {
+      const self = this
+      this.getInitWorks({ page: page })
+        .then(res => {
+          // 若接口中的点赞数组中没数据
+          if (res.data.data.own.length === 0) {
+            // 停止 load 事件
+            self.$refs.work.$refs.child.stop()
+            // 直接修改*点赞*子组件中的 tips 值，显示 没有更多数据了
+            self.$refs.thumb.tips = true
+          } else {
+            // 若接口中的点赞数据中含有数据
+            // 获取到初始化点赞数组后，先把数组 push 到 state 中的点赞数组后面
+            self.pushWork(res.data.data.own)
+            // 得到数组数据后，传入 id 完善点赞数组数据
+            for (let i = 0; i < self.ownWorks.length; i++) {
+              // 传入未完善点赞数组前的 id
+              const that = self
+              self.getThumbVideo(self.ownWorks[i].id)
+                .then(res => {
+                  if (res.data.code === 200) {
+                    if (res.data.data[0].id === self.ownWorks[i].id) {
+                      that.updateThumb({
+                        id: self.ownWorks[i].id,
+                        content: res.data.data[0]
+                      })
+                    }
+                  }
+                })
+            }
+          }
+          
+        })
+    },
+
+
     // 根据页数获取后续作品
     getOtherWorks (page) {
       this.getInitWorks({ page: page })
@@ -100,65 +152,48 @@ export default {
     },
     // 监听子组件事件，当用户向下滑动时，子组件中的 page 数发生变化
     addWorkPage (page) {
-      const self = this
-      this.getInitWorks({ page: page })
-        .then(res => {
-          if (res.data.code === 200) {
-            if (res.data.data.length === 0) {
-              // 若没有发布过作品
-              // 停止加载
-              self.$refs.thumb.$refs.child.stop()
-              // 展示提示
-              self.$refs.work.tips = false
-            } else {
-              // 从接口获取到数组并将它拼接到 state 的用户个人作品数组后面
-              self.$store.commit('pushWork', res.data.data.own)
-            }
-          } else if (res.data.code === 400) {
-            console.log('获取用户作品失败')
-          }
-        })
-      this.getDetailWorks(page)
+      this.getOwnAndComplete(page)
     },
     // 初始化作品数组
-    InitWorkCpn () {
+    InitWorkCpn (page) {
       // 获取第0页的个人作品集，初始作品数组
       const self = this
       this.getInitWorks({ page: 0 })
         .then(res => {
           if (res.data.code === 200) {
-            if (res.data.data.length === 0) {
+            if (res.data.data.own.length === 0) {
               // 若没有发布过作品
               // 停止加载
-              self.$refs.thumb.$refs.child.stop()
+              self.$refs.work.$refs.child.stop()
               // 展示提示
               self.$refs.work.tips = false
             } else {
               // 从接口获取到数组并将它拼接到 state 的用户个人作品数组后面
-              self.$store.commit('pushWork', res.data.data.own)
+              self.pushWork(res.data.data.own)
             }
           } else if (res.data.code === 400) {
             console.log('获取用户作品失败')
           }
         })
-    }
+    },
+    
   },
   computed: {
     ...mapState({
       // 获取用户点赞视频的数组
       // 将该数组传给子组件
       'userThumb': state => state.user.userThumb,
-
       'ownWorks': state => state.user.ownWorks
     })
   },
   created () {
     // 刚载入个人信息界面时获取第 0 页的数据
     this.getThumbAndComplete(0)
-    // 初始化作品数组
-    this.InitWorkCpn()
-    // 完善第 0 页作品信息
-    this.getDetailWorks(0)
+    this.getOwnAndComplete(0)
+    
+    // console.log(this.$refs.thumb.$refs.child)
+    // this.$refs.thumb.$refs.child.stop()
+    // console.log(this.$refs)
   }
 }
 </script>

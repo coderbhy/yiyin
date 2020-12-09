@@ -1,6 +1,6 @@
 <template>
   <div class="video">
-    <video-player  class="video-player vjs-custom-skin"
+    <video-player class="video-player vjs-custom-skin"
       ref="videoPlayer"
       :playsinline="true"
       :options="playerOptions"
@@ -10,6 +10,7 @@
 
 <script>
 import { videoPlayer } from 'vue-video-player'
+import 'video.js/dist/video-js.css'
 export default {
   props: {
     src: {
@@ -18,6 +19,9 @@ export default {
     indexNum: {
       type: Number
     }
+  },
+  components: {
+    videoPlayer
   },
   data () {
     return {

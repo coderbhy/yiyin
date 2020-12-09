@@ -140,8 +140,8 @@ export default {
     },
     pageIsChange (page) {
       this.$axios.all([
-        this.getAPageData(0, ((page - 1) * 7).toString()),
-        this.getAPageData(1, ((page - 1) * 7).toString())
+        this.getAPageData(0, ((page - 1) * 8).toString()),
+        this.getAPageData(1, ((page - 1) * 8).toString())
       ])
         .then(this.$axios.spread(function (acct, perms) {
           self.sendDataToArray({

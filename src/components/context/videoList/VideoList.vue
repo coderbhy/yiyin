@@ -1,12 +1,12 @@
 <template>
   <swiper ref="mySwiper" :options="swiperOptions" class="">
     <swiper-slide v-for="(item, index) in allVideos" :key="item.id">
-      <videos :src="item.src" ref="childVideo" :index-num="index"></videos> 
+      <videos :src="item.video.src" ref="childVideo" :index-num="index"></videos> 
       <div class="left-info">
-        <left-info></left-info>
+        <left-info :title="item.video.title" :yb_usernick="item.user.yb_usernick"></left-info>
       </div>
       <div class="right-info">
-        <right-info :video-id="item.id"></right-info>
+        <right-info :video-id="item.video.id" :num="item.video.num" :yb_userhead="item.user.yb_userhead"></right-info>
       </div>
     </swiper-slide>
     <div class="swiper-pagination" slot="pagination"></div>
@@ -21,7 +21,7 @@ import Videos from './Videos'
 import LeftInfo from './LeftInfo'
 import RightInfo from './RightInfo'
 
-import { mapState } from 'vuex'
+import { mapActions, mapMutations, mapState } from 'vuex'
 export default{
   components: {
     Swiper,
@@ -53,6 +53,13 @@ export default{
             this.page += 1
             this.$refs.childVideo[this.page].playVideo()
             this.$refs.childVideo[this.page - 1].pauseVideo()
+            const self = this
+            // 向下滑动时开始向后端发送请求
+            // 并将请求到的数据加到数组
+            this.getOneVideo({ type: this.$q.sessionStorage.getItem('likeType') })
+              .then(res => {
+                self.pushOneVideoToAll(res.data.data)
+              })
           },
           slidePrevTransitionStart: () => {
             this.page -= 1
@@ -61,34 +68,24 @@ export default{
             this.$refs.childVideo[this.page + 1].loadVideo()
           }
         }
-      },
-      videosList: [
-        {
-          id: 1,
-          src: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4'
-        },
-        {
-          id: 2,
-          src: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4'
-        },
-        {
-          id: 3,
-          src: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4'
-        },
-        {
-          id: 4,
-          src: 'http://video.jishiyoo.com/161b9562c780479c95bbdec1a9fbebcc/8d63913b46634b069e13188b03073c09-d25c062412ee3c4a0758b1c48fc8c642-ld.mp4'
-        }
-      ]
+      }
     }
   },
   methods: {
+    ...mapActions({
+      'getOneVideo': 'user/getOneVideo'
+    }),
+    ...mapMutations({
+      'pushOneVideoToAll': 'user/pushOneVideoToAll'
+    })
   },
   computed: {
     // 获取首页中用户观看的所有视频
     ...mapState({
       'allVideos': state => state.user.allVideos
     })
+  },
+  created () {
   }
 }
 </script>

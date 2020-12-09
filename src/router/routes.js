@@ -19,7 +19,7 @@ const routes = [
     path: '/',
     component: MainLayout,
     children: [
-      { path: '', redirect: 'home' },
+      { path: '', redirect: 'home/first' },
       { path: 'login', component: Login, meta: { requiresAuth: false } },
       { path: 'usertype', component: UserType, meta: { requiresAuth: true } },
       { path: 'home/:type', component: Home, meta: { requiresAuth: true } },

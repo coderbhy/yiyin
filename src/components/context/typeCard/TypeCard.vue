@@ -5,7 +5,7 @@
         选择自己感兴趣的模块
       </div>
       <div class="row">
-        <div class="col-3 column items-center q-pa-xs" v-for="(item, index) in allTypes" :key="index">
+        <div class="col-3 column items-center q-pa-xs q-mb-xs" v-for="(item, index) in allTypes" :key="index">
           <div class="btn row items-center justify-center relative-position " v-ripple @click="submitType(item.type)"> 
             <div class="ellipsis full-width text-no-wrap  text-weight-light text-center">
               {{ item.type }}
@@ -30,15 +30,18 @@ export default {
     })
   },
   created () {
+    // 若本地缓存中含有数据，删除数据
+    if (this.$q.sessionStorage.has('likeType')) {
+      this.$q.sessionStorage.remove('likeType')
+    }
     this.getAllTypes()
   },
   methods: {
     ...mapActions({
-      'getAllTypes': 'user/getAllTypes',
-      'subLikeType': 'user/subLikeType'
+      'getAllTypes': 'user/getAllTypes'
     }),
     submitType (type) {
-      this.subLikeType(type)
+      this.$q.sessionStorage.set('likeType', type)
       this.$router.push(`/home/${type}`)
     }
   }

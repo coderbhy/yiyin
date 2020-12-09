@@ -7,7 +7,7 @@
     active-color="primary">
     <q-route-tab
       icon="home"
-      to="/home"
+      :to="homeSrc"
       exact />
     <q-fab icon="add" direction="up" padding="xs" class="bg-primary text-white" vertical-actions-align="center">
       <q-fab-action
@@ -35,7 +35,11 @@
 
 <script>
 export default {
-  
+  computed: {
+    homeSrc () {
+      return '/home/' +  this.$q.sessionStorage.getItem('likeType') 
+    }
+  }
 }
 </script>
 

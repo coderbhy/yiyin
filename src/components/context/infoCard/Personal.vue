@@ -23,25 +23,11 @@
       <div class="yiban-uid q-mb-sm">易班id:{{ userInfo.yb_userid }}</div>
     </div>
     <q-separator inset/>
-    <!-- <div class="great-data q-my-sm row">
-      <div class="likes row q-pr-md">
-        <span class="text-nowrap ellipses">{{ personInfo.like }}</span>
-        <div class="">获赞</div>
-      </div>
-      <div class="concern row q-pr-md">
-        <span class="text-no-wrap ellipsis">{{ personInfo.concern }}</span>
-        <div class="">关注</div>
-      </div>
-      <div class="fans row">
-        <span class="text-nowrap ellipses">{{ personInfo.fans }}</span>
-        <div class="">粉丝</div>
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 export default {
   data () {
     return {
@@ -51,6 +37,14 @@ export default {
     ...mapState({
       'userInfo': state => state.user.userInfo
     })
+  },
+  methods: {
+    ...mapActions({
+      'userSelfInfo': 'user/userSelfInfo'
+    })
+  },
+  created () {
+    this.userSelfInfo()
   }
 }
 </script>
@@ -67,11 +61,11 @@ export default {
 }
 .personal .intro .nickname {
   font-size: 1.3rem;
-  letter-spacing: .25rem;
+  letter-spacing: .05rem;
   margin-left: .5rem;
 }
 .personal .intro .yiban-uid {
-  font-size: .5rem;
+  font-size: .85rem;
   margin-left: .5rem;
 }
 .great-data {

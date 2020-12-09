@@ -8,7 +8,7 @@ export function UploadVideo (content, payload) {
   formData.append('v_type', payload.type)
   formData.append('cover', payload.image)
   formData.append('video', payload.video)
-  formData.forEach(value => console.log(value))
+  // formData.forEach(value => console.log(value))
   return axios({
     method: 'post',
     data: formData,
@@ -55,9 +55,10 @@ export function thumb (content, payload) {
 }
 // 获取所有视频类型数组
 export function getAllTypes (content) {
+  let formData = new FormData()
   axios({
     method: 'post',
-    data: '',
+    data: formData,
     url: '/user/showtype',
     headers: {
       'Content-Type': 'multipart/form-data'
@@ -70,13 +71,12 @@ export function getAllTypes (content) {
       console.log(err)
     })
 }
-// 提交自己喜欢的类型
-export function subLikeType (content, payload) {
+// 根据类型获取一个视频
+// payload => { type: String }
+export function getOneVideo (context, payload) {
   let formData = new FormData()
-  formData.append('v_type', payload)
-  // 将用户感兴趣的类型存放到 state 中
-  content.commit('getUserLikeType', payload)
-  axios({
+  formData.append('v_type', payload.type)
+  return axios({
     method: 'post',
     url: '/user/one',
     data: formData,
@@ -84,12 +84,6 @@ export function subLikeType (content, payload) {
       'Content-Type': 'multipart/form-data'
     }
   })
-    .then(res => {
-
-    })
-    .catch(err => {
-      console.log(err)
-    })
 }
 // 获取用户信息（头像、昵称等）
 export function userSelfInfo (content) {
@@ -105,7 +99,8 @@ export function userSelfInfo (content) {
   })
     .then(res => {
       if (res.data.code === 200) {
-        content.commit('updateUserInfo', res.data.info)
+        // res.data.data.info 是一个数组
+        content.commit('updateUserInfo', res.data.data.info)
       }
     })
 }
@@ -113,7 +108,7 @@ export function userSelfInfo (content) {
 export function getThumbVideo (content, payload) {
   let formData = new FormData()
   formData.append('id', payload)
-  axios({
+  return axios({
     method: 'post',
     url: '/user/v_id',
     data: formData,
@@ -121,15 +116,23 @@ export function getThumbVideo (content, payload) {
       'Content-Type': 'multipart/form-data'
     }
   })
-    .then(res => {
-      if (res.data.code === 200) {
-        for (let i = 0; i < res.data.data.length; i++) {
-          if (res.data.data[i].id === payload) {
-            content.commit('updateThumb', res.data.data[i])
-          }
-        }
-      }
-    })
+}
+// *****************
+// profile
+// 根据 id 查找相应的视频详细信息
+// payload => { id: String }
+// 返回一个 promise 对象
+export function getPerfectWorks (context, payload) {
+  let formData = new FormData()
+  formData.append('id', payload.id)
+  return axios({
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    url: '/user/v_id'
+  })
 }
 // 根据页数获取点赞的视频
 export function userSelfThumb (context, payload) {
@@ -146,7 +149,7 @@ export function userSelfThumb (context, payload) {
 }
 // 根据页数获取自己的作品初始集合
 // payload => { page: Number }
-// page 限制 0 7 14 ...
+// page 限制 0 8 16 ...
 export function getInitWorks (context, payload) {
   let formData = new FormData()
   formData.append('page', payload.page.toString())
@@ -159,19 +162,6 @@ export function getInitWorks (context, payload) {
     data: formData
   })
 }
-// 根据 id 查找相应的视频详细信息
-// payload => { id: String }
-// 并将获取到的视频信息放入 ownWorks 数组中
-// 返回一个 promise 对象
-export function getPerfectWorks (context, payload) {
-  let formData = new FormData()
-  formData.append('id', payload.id)
-  return axios({
-    method: 'post',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    url: '/user/v_id'
-  })
-}
+// ******************
+
+// 传 id，返回视频点赞状态

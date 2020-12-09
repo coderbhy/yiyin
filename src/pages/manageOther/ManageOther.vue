@@ -42,7 +42,7 @@ export default {
       const self = this
       this.getSomeVideo({
         status: '2',
-        page: ((self.UncheckCurrent - 1) * 7).toString()
+        page: ((self.UncheckCurrent - 1) * 8).toString()
       })
         .then(res => {
           self.fillUncheckData(res.data.data)

@@ -82,7 +82,7 @@ export default {
   methods: {
     onLoad (index, done) {
       setTimeout(() => {
-        this.page += 7
+        this.page += 8
         this.$emit('addPage', this.page)
         done()
       }, 1500)
